@@ -434,6 +434,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                             "header",
                             "header-filename",
                             "header-filesize",
+                            "header-filemodified",
                             "grid",
                             "rule",
                             "numbers",
