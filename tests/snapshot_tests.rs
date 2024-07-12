@@ -18,6 +18,7 @@ snapshot_tests! {
     changes:                     "changes",
     grid:                        "grid",
     header:                      "header",
+    header_filemodified:         "header-filemodified",
     numbers:                     "numbers",
     rule:                        "rule",
     changes_grid:                "changes,grid",
