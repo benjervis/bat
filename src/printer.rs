@@ -17,6 +17,9 @@ use content_inspector::ContentType;
 
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
+use time::format_description;
+use time::OffsetDateTime;
+use time::UtcOffset;
 use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
@@ -495,6 +498,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 StyleComponent::HeaderFilesize,
                 self.config.style_components.header_filesize(),
             ),
+            (
+                StyleComponent::HeaderFileModified,
+                self.config.style_components.header_filemodified(),
+            ),
         ]
         .iter()
         .filter(|(_, is_enabled)| *is_enabled)
@@ -534,6 +541,32 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     let header_filesize =
                         format!("Size: {}", self.colors.header_value.paint(bsize));
                     self.print_header_multiline_component(handle, &header_filesize)
+                }
+                StyleComponent::HeaderFileModified => {
+                    let time_format =
+                        format_description::parse("[hour]:[minute]:[second] [year]-[month]-[day]")
+                            .unwrap();
+
+                    let mod_time: String = metadata
+                        .modified
+                        .map(|s| {
+                            let offset_time = OffsetDateTime::from(s);
+
+                            // If we can't determine the user's timezone, specify UTC explicitly
+                            let local_time_offset =
+                                UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);
+
+                            offset_time
+                                .to_offset(local_time_offset)
+                                .format(&time_format)
+                                .ok()
+                        })
+                        .flatten()
+                        .unwrap_or_else(|| "-".into());
+
+                    let header_filemodified =
+                        format!("Modified: {}", self.colors.header_value.paint(mod_time));
+                    self.print_header_multiline_component(handle, &header_filemodified)
                 }
                 _ => Ok(()),
             })?;

@@ -3,6 +3,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
@@ -89,6 +90,7 @@ impl<'a> InputKind<'a> {
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
+    pub(crate) modified: Option<SystemTime>,
 }
 
 pub struct Input<'a> {
@@ -132,8 +134,16 @@ impl<'a> Input<'a> {
 
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
+
+        let input_metadata = fs::metadata(path);
+        let modified = input_metadata
+            .as_ref()
+            .map(|m| m.modified().ok())
+            .ok()
+            .flatten();
         let metadata = InputMetadata {
-            size: fs::metadata(path).map(|m| m.len()).ok(),
+            size: input_metadata.as_ref().map(|m| m.len()).ok(),
+            modified,
             ..InputMetadata::default()
         };
 
