@@ -272,7 +272,7 @@ impl App {
         }
     }
 
-    pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
+    pub fn config(&self, inputs: &[Input<'_>]) -> Result<Config<'_>> {
         let style_components = self.style_components()?;
 
         let extra_plain = self.matches.get_count("plain") > 1;
